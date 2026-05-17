@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D饼状图动态增长</title>
+  <style>
+    :root {
+      --value: 0;
+      --accent: #3b82f6;
+      --base: #e5e7eb;
+      --depth: 26px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at 20% 20%, #f8fafc, #dbeafe 55%, #bfdbfe);
+      font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    .card {
+      width: min(92vw, 480px);
+      padding: 28px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(6px);
+      box-shadow: 0 20px 50px rgba(30, 64, 175, 0.2);
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0 0 24px;
+      color: #0f172a;
+      font-size: 24px;
+      letter-spacing: 1px;
+    }
+
+    .chart-wrap {
+      display: grid;
+      place-items: center;
+      perspective: 800px;
+      margin: 8px 0 18px;
+    }
+
+    .pie {
+      width: 240px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      position: relative;
+      transform: rotateX(56deg);
+      background: conic-gradient(
+        var(--accent) calc(var(--value) * 1%),
+        var(--base) 0
+      );
+      box-shadow:
+        0 20px 30px rgba(15, 23, 42, 0.28),
+        inset 0 10px 14px rgba(255, 255, 255, 0.35);
+    }
+
+    .pie::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      transform: translateY(var(--depth));
+      background: linear-gradient(180deg, #1d4ed8, #1e3a8a);
+      z-index: -1;
+      filter: brightness(0.9);
+    }
+
+    .pie::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.5), rgba(255,255,255,0) 45%);
+      pointer-events: none;
+    }
+
+    .value {
+      font-size: 42px;
+      font-weight: 700;
+      color: #1e3a8a;
+      margin: 10px 0 4px;
+    }
+
+    .desc {
+      margin: 0;
+      color: #334155;
+      font-size: 15px;
+    }
+
+    button {
+      margin-top: 18px;
+      border: 0;
+      background: #2563eb;
+      color: white;
+      font-size: 14px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    button:hover { background: #1d4ed8; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>3D 饼状图占比动画</h1>
+    <div class="chart-wrap">
+      <div id="pie" class="pie" aria-label="占比饼图"></div>
+    </div>
+    <div id="value" class="value">0%</div>
+    <p class="desc">占比会从 0% 平滑增长到 80%</p>
+    <button id="replay">重播动画</button>
+  </main>
+
+  <script>
+    const pie = document.getElementById('pie');
+    const valueText = document.getElementById('value');
+    const replayBtn = document.getElementById('replay');
+
+    function animateTo(target = 80, duration = 2200) {
+      const start = performance.now();
+
+      function frame(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const value = +(target * eased).toFixed(1);
+
+        pie.style.setProperty('--value', value);
+        valueText.textContent = `${Math.round(value)}%`;
+
+        if (progress < 1) requestAnimationFrame(frame);
+      }
+
+      pie.style.setProperty('--value', 0);
+      valueText.textContent = '0%';
+      requestAnimationFrame(frame);
+    }
+
+    animateTo();
+    replayBtn.addEventListener('click', () => animateTo());
+  </script>
+</body>
+</html>
